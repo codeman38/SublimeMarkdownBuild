@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 """
 Fenced Code Extension for Python Markdown
 =========================================
@@ -63,31 +61,34 @@ Optionally backticks instead of tildes as per how github's code block markdown i
 
 Copyright 2007-2008 [Waylan Limberg](http://achinghead.com/).
 
-Project website: <http://www.freewisdom.org/project/python-markdown/Fenced__Code__Blocks>
+Project website: <http://packages.python.org/Markdown/extensions/fenced_code_blocks.html>
 Contact: markdown@freewisdom.org
 
 License: BSD (see ../docs/LICENSE for details)
 
 Dependencies:
 * [Python 2.4+](http://python.org)
-* [Markdown 2.0+](http://www.freewisdom.org/projects/python-markdown/)
+* [Markdown 2.0+](http://packages.python.org/Markdown/)
 * [Pygments (optional)](http://pygments.org)
 
 """
 
+from __future__ import absolute_import
+from __future__ import unicode_literals
+from . import Extension
+from ..preprocessors import Preprocessor
+from .codehilite import CodeHilite, CodeHiliteExtension
 import re
-import markdown
-from markdown.extensions.codehilite import CodeHilite, CodeHiliteExtension
 
 # Global vars
 FENCED_BLOCK_RE = re.compile( \
-    r'(?P<fence>^(?:~{3,}|`{3,}))[ ]*(\{?\.?(?P<lang>[a-zA-Z0-9_-]*)\}?)?[ ]*\n(?P<code>.*?)(?<=\n)(?P=fence)[ ]*$',
+    r'(?P<fence>^(?:~{3,}|`{3,}))[ ]*(\{?\.?(?P<lang>[a-zA-Z0-9_+-]*)\}?)?[ ]*\n(?P<code>.*?)(?<=\n)(?P=fence)[ ]*$',
     re.MULTILINE|re.DOTALL
     )
 CODE_WRAP = '<pre><code%s>%s</code></pre>'
 LANG_TAG = ' class="%s"'
 
-class FencedCodeExtension(markdown.Extension):
+class FencedCodeExtension(Extension):
 
     def extendMarkdown(self, md, md_globals):
         """ Add FencedBlockPreprocessor to the Markdown instance. """
@@ -95,13 +96,13 @@ class FencedCodeExtension(markdown.Extension):
 
         md.preprocessors.add('fenced_code_block',
                                  FencedBlockPreprocessor(md),
-                                 "_begin")
+                                 ">normalize_whitespace")
 
 
-class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
+class FencedBlockPreprocessor(Preprocessor):
 
     def __init__(self, md):
-        markdown.preprocessors.Preprocessor.__init__(self, md)
+        super(FencedBlockPreprocessor, self).__init__(md)
 
         self.checked_for_codehilite = False
         self.codehilite_conf = {}
@@ -130,7 +131,7 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
                 # is enabled, so we call it to highlite the code
                 if self.codehilite_conf:
                     highliter = CodeHilite(m.group('code'),
-                            linenos=self.codehilite_conf['force_linenos'][0],
+                            linenums=self.codehilite_conf['linenums'][0],
                             guess_lang=self.codehilite_conf['guess_lang'][0],
                             css_class=self.codehilite_conf['css_class'][0],
                             style=self.codehilite_conf['pygments_style'][0],
@@ -158,8 +159,3 @@ class FencedBlockPreprocessor(markdown.preprocessors.Preprocessor):
 
 def makeExtension(configs=None):
     return FencedCodeExtension(configs=configs)
-
-
-if __name__ == "__main__":
-    import doctest
-    doctest.testmod()

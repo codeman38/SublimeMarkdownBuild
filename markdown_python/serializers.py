@@ -37,7 +37,9 @@
 # --------------------------------------------------------------------
 
 
-import util
+from __future__ import absolute_import
+from __future__ import unicode_literals
+from . import util
 ElementTree = util.etree.ElementTree
 QName = util.etree.QName
 if hasattr(util.etree, 'test_comment'):
@@ -251,7 +253,7 @@ def _namespaces(elem, default_namespace=None):
         tag = elem.tag
         if isinstance(tag, QName) and tag.text not in qnames:
             add_qname(tag.text)
-        elif isinstance(tag, basestring):
+        elif isinstance(tag, util.string_type):
             if tag not in qnames:
                 add_qname(tag)
         elif tag is not None and tag is not Comment and tag is not PI:
